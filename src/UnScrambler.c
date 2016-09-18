@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "types.h"
 
-u8 *Key_Unscrambler(u8 normal_key[0x10], u8 Key[0x10], const u8 C[0x10], u8 X_or_Y){
+void Key_Unscrambler(u8 normal_key[0x10], u8 Key[0x10], const u8 C[0x10], u8 X_or_Y, u8 *return_key){
 	int i;
 	u8 shifted_X_xor_Y_addition_C[0x10];
 	for(i=0;i<16;i++){
@@ -19,8 +19,6 @@ u8 *Key_Unscrambler(u8 normal_key[0x10], u8 Key[0x10], const u8 C[0x10], u8 X_or
 		carry = (u8)(((u16)((u8)shifted_X_xor_Y_addition_C[15-i] - (u8)carry - (u8)C[15-i])) >> (u8)8)&0x01;
 	}
 	u8 shifted_X[0x10];
-	static u8 X[0x10];
-	static u8 Y[0x10];
 	if(X_or_Y){
 		// KeyX
 		for(i=0;i<16;i++){
@@ -29,10 +27,9 @@ u8 *Key_Unscrambler(u8 normal_key[0x10], u8 Key[0x10], const u8 C[0x10], u8 X_or
 		}
 		for(i=0;i<16;i++){
 			//Even more type casts and masks.
-			if(i!=0) X[i] = (u8)((((u8)shifted_X[i] >> (u8)2)&0x3F) + (((u8)shifted_X[i-1] << (u8)6)&0xC0))&0xff;
-			else X[i] = (u8)((((u8)shifted_X[i] >> (u8)2)&0x3F) + (((u8)shifted_X[15] << (u8)6)&0xC0))&0xff;
+			if(i!=0) return_key[i] = (u8)((((u8)shifted_X[i] >> (u8)2)&0x3F) + (((u8)shifted_X[i-1] << (u8)6)&0xC0))&0xff;
+			else return_key[i] = (u8)((((u8)shifted_X[i] >> (u8)2)&0x3F) + (((u8)shifted_X[15] << (u8)6)&0xC0))&0xff;
 		}
-		return X;
 	}
 	else {
 		//KeyY
@@ -43,13 +40,12 @@ u8 *Key_Unscrambler(u8 normal_key[0x10], u8 Key[0x10], const u8 C[0x10], u8 X_or
 		}
 		for(i=0;i<16;i++){
 			//The type casts! They're everywhere!
-			Y[i] = (u8)((u8)shifted_X_xor_Y[i] ^ (u8)shifted_X[i]);
+			return_key[i] = (u8)((u8)shifted_X_xor_Y[i] ^ (u8)shifted_X[i]);
 		}
-		return Y;
 	}
 }
 
-u8 *Key_Scrambler(u8 X[0x10], u8 Y[0x10], const u8 C[0x10]){
+void Key_Scrambler(u8 X[0x10], u8 Y[0x10], const u8 C[0x10], u8 *normal_key){
 	int i;
 	u8 shifted_X[0x10];
 	for(i=0;i<16;i++){
@@ -69,12 +65,10 @@ u8 *Key_Scrambler(u8 X[0x10], u8 Y[0x10], const u8 C[0x10]){
 		shifted_X_xor_Y_addition_C[15-i] = (u8)((u8)shifted_X_xor_Y[15-i] + (u8)carry + (u8)C[15-i]);
 		carry = (u8)(((u16)((u8)shifted_X_xor_Y[15-i] + (u8)carry + (u8)C[15-i])) >> (u8)8);
 	}
-	static u8 normal_key[0x10];
 	for(i=0;i<16;i++){
 		//Just make it stop! Oh wait, there's no more type casts and masks after this loop.
 		if(i < 5) normal_key[i] = (u8)((((u8)shifted_X_xor_Y_addition_C[10+i] << (u8)7)&0x80) + (((u8)shifted_X_xor_Y_addition_C[10+i+1] >> (u8)1)&0x7F))&0xff;
 		else if (i == 5) normal_key[i] = (u8)((((u8)shifted_X_xor_Y_addition_C[10+i] << (u8)7)&0x80) + (((u8)shifted_X_xor_Y_addition_C[0] >> (u8)1)&0x7F))&0xff;
 		else normal_key[i] = (u8)((((u8)shifted_X_xor_Y_addition_C[-6+i] << (u8)7)&0x80) + (((u8)shifted_X_xor_Y_addition_C[-6+i+1] >> (u8)1)&0x7F))&0xff;
 	}
-	return normal_key;
 }

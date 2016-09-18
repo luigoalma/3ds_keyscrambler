@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	if(!(strncmp(argv[1],"N", 1) == 0) && !(strncmp(argv[1],"X", 1) == 0) && !(strncmp(argv[1],"Y", 1) == 0)){
-		printf("Bad argument.\n");
+		printf("Please specify if you want to get a Normal Key, KeyX or KeyY.\n");
 		Print_Usage(argv[0]);
 		return 1;
 	}
@@ -107,21 +107,24 @@ int main(int argc, char* argv[])
 		Print_Key(Keys[0], "KeyX");
 		Print_Key(Keys[1], "KeyY");
 		Print_Key(Keys[2], "C");
-		u8 *returned_key = Key_Scrambler(Keys[0], Keys[1], Keys[2]);
+		u8 returned_key[0x10];
+		Key_Scrambler(Keys[0], Keys[1], Keys[2], returned_key);
 		Print_Key(returned_key, "Normal Key");
 	}
 	else if(strncmp(argv[1],"X", 1) == 0){
 		Print_Key(Keys[0], "Normal Key");
 		Print_Key(Keys[1], "KeyY");
 		Print_Key(Keys[2], "C");
-		u8 *returned_key = Key_Unscrambler(Keys[0], Keys[1], Keys[2], 1);
+		u8 returned_key[0x10];
+		Key_Unscrambler(Keys[0], Keys[1], Keys[2], 1, returned_key);
 		Print_Key(returned_key, "KeyX");
 	}
 	else if(strncmp(argv[1],"Y", 1) == 0){
 		Print_Key(Keys[0], "Normal Key");
 		Print_Key(Keys[1], "KeyX");
 		Print_Key(Keys[2], "C");
-		u8 *returned_key = Key_Unscrambler(Keys[0], Keys[1], Keys[2], 0);
+		u8 returned_key[0x10];
+		Key_Unscrambler(Keys[0], Keys[1], Keys[2], 0, returned_key);
 		Print_Key(returned_key, "KeyY");
 	}
 	return 0;
