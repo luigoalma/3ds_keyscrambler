@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "types.h"
 
-void Key_Unscrambler(u8 normal_key[0x10], u8 Key[0x10], const u8 C[0x10], u8 X_or_Y, u8 *return_key){
+//also, for those wondering wtf are all these typecasts for, it's due to gcc 4.9.1 failing on me back when I made this.
+
+void Key_Unscrambler(u8 *normal_key, u8 *Key, const u8 *C, u8 X_or_Y, u8 *return_key){
 	int i;
 	u8 shifted_X_xor_Y_addition_C[0x10];
 	for(i=0;i<16;i++){
@@ -45,7 +47,7 @@ void Key_Unscrambler(u8 normal_key[0x10], u8 Key[0x10], const u8 C[0x10], u8 X_o
 	}
 }
 
-void Key_Scrambler(u8 X[0x10], u8 Y[0x10], const u8 C[0x10], u8 *normal_key){
+void Key_Scrambler(u8 *X, u8 *Y, const u8 *C, u8 *normal_key){
 	int i;
 	u8 shifted_X[0x10];
 	for(i=0;i<16;i++){
